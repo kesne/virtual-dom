@@ -33,17 +33,26 @@ function recurse(rootNode, tree, indices, nodes, rootIndex) {
             var childNodes = rootNode.childNodes
 
             for (var i = 0; i < tree.children.length; i++) {
-                rootIndex += 1
+                //Don't recurse the components and breakout stuff:
+                if(childNodes[j] && childNodes[j].hasAttribute && (childNodes[j].hasAttribute('juno-component') || childNodes[j].hasAttribute('juno-breakout'))){
+                  //JUNO WORLD. IGNORE
+                  //Ignore this tree index, but keep ticking the childNode index:
+                  i--;
+                }else{
+                  rootIndex += 1
 
-                var vChild = vChildren[i] || noChild
-                var nextIndex = rootIndex + (vChild.count || 0)
+                  var vChild = vChildren[i] || noChild
+                  var nextIndex = rootIndex + (vChild.count || 0)
 
-                // skip recursion down the tree if there are no nodes down here
-                if (indexInRange(indices, rootIndex, nextIndex)) {
-                    recurse(childNodes[i], vChild, indices, nodes, rootIndex)
+                  // skip recursion down the tree if there are no nodes down here
+                  if (indexInRange(indices, rootIndex, nextIndex)) {
+                      recurse(childNodes[j], vChild, indices, nodes, rootIndex)
+                  }
+
+                  rootIndex = nextIndex;
                 }
-
-                rootIndex = nextIndex
+                //Go to next child node:
+                j++;
             }
         }
     }
