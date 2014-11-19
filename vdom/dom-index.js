@@ -32,6 +32,7 @@ function recurse(rootNode, tree, indices, nodes, rootIndex) {
 
             var childNodes = rootNode.childNodes
 
+            var j = 0;
             for (var i = 0; i < tree.children.length; i++) {
                 //Don't recurse the components and breakout stuff:
                 if(childNodes[j] && childNodes[j].hasAttribute && (childNodes[j].hasAttribute('juno-component') || childNodes[j].hasAttribute('juno-breakout'))){
