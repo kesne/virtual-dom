@@ -1,5 +1,5 @@
 var isObject = require("is-object")
-var isHook = require("../vtree/is-vhook.js")
+var isHook = require("../vnode/is-vhook.js")
 
 module.exports = applyProperties
 
@@ -41,6 +41,8 @@ function removeProperty(node, props, previous, propName) {
             } else {
                 node[propName] = null
             }
+        } else if (previousValue.unhook) {
+            previousValue.unhook(node, propName)
         }
     }
 }

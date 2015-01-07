@@ -1,52 +1,54 @@
-var h = require("./index.js")
+'use strict';
 
-var BLACKLISTED_KEYS = {
-    "style": true,
-    "namespace": true,
-    "key": true
-}
-var SVG_NAMESPACE = "http://www.w3.org/2000/svg"
+var isArray = require('x-is-array');
 
-module.exports = svg
+var h = require('./index.js');
+
+
+var isSVGAttribute = require('./is-svg-attribute');
+
+var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
+module.exports = svg;
 
 function svg(tagName, properties, children) {
     if (!children && isChildren(properties)) {
-        children = properties
-        properties = {}
+        children = properties;
+        properties = {};
     }
 
-    properties = properties || {}
+    properties = properties || {};
 
     // set namespace for svg
-    properties.namespace = SVG_NAMESPACE
+    properties.namespace = SVG_NAMESPACE;
 
-    var attributes = properties.attributes || (properties.attributes = {})
+    var attributes = properties.attributes || (properties.attributes = {});
 
-    // for each key, if attribute & string, bool or number then
-    // convert it into a setAttribute hook
     for (var key in properties) {
         if (!properties.hasOwnProperty(key)) {
-            continue
+            continue;
         }
 
-        if (BLACKLISTED_KEYS[key]) {
-            continue
+        if (!isSVGAttribute(key)) {
+            continue;
         }
 
-        var value = properties[key]
-        if (typeof value !== "string" &&
-            typeof value !== "number" &&
-            typeof value !== "boolean"
+        var value = properties[key];
+
+        if (typeof value !== 'string' &&
+            typeof value !== 'number' &&
+            typeof value !== 'boolean'
         ) {
-            continue
+            continue;
         }
 
         attributes[key] = value
+        properties[key] = undefined
     }
 
-    return h(tagName, properties, children)
+    return h(tagName, properties, children);
 }
 
 function isChildren(x) {
-    return typeof x === "string" || Array.isArray(x)
+    return typeof x === 'string' || isArray(x);
 }

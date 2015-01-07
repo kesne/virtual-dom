@@ -1,7 +1,7 @@
 var applyProperties = require("./apply-properties")
 
-var isWidget = require("../vtree/is-widget.js")
-var VPatch = require("../vtree/vpatch.js")
+var isWidget = require("../vnode/is-widget.js")
+var VPatch = require("../vnode/vpatch.js")
 
 var render = require("./create-element")
 var updateWidget = require("./update-widget")
@@ -75,26 +75,30 @@ function stringPatch(domNode, leftVNode, vText, renderOptions) {
         }
     }
 
-    destroyWidget(domNode, leftVNode)
-
     return newNode
 }
 
 function widgetPatch(domNode, leftVNode, widget, renderOptions) {
-    if (updateWidget(leftVNode, widget)) {
-        return widget.update(leftVNode, domNode) || domNode
+    var updating = updateWidget(leftVNode, widget)
+    var newNode
+
+    if (updating) {
+        newNode = widget.update(leftVNode, domNode) || domNode
+    } else {
+        newNode = render(widget, renderOptions)
     }
 
     var parentNode = domNode.parentNode
-    var newWidget = render(widget, renderOptions)
 
-    if (parentNode) {
-        parentNode.replaceChild(newWidget, domNode)
+    if (parentNode && newNode !== domNode) {
+        parentNode.replaceChild(newNode, domNode)
     }
 
-    destroyWidget(domNode, leftVNode)
+    if (!updating) {
+        destroyWidget(domNode, leftVNode)
+    }
 
-    return newWidget
+    return newNode
 }
 
 function vNodePatch(domNode, leftVNode, vNode, renderOptions) {
@@ -104,8 +108,6 @@ function vNodePatch(domNode, leftVNode, vNode, renderOptions) {
     if (parentNode) {
         parentNode.replaceChild(newNode, domNode)
     }
-
-    destroyWidget(domNode, leftVNode)
 
     return newNode
 }
@@ -131,22 +133,33 @@ function reorderChildren(domNode, bIndex) {
     var move
     var node
     var insertNode
-    for (i = 0; i < len; i++) {
+    var chainLength
+    var insertedLength
+    var nextSibling
+    for (i = 0; i < len;) {
         move = bIndex[i]
+        chainLength = 1
         if (move !== undefined && move !== i) {
+            // try to bring forward as long of a chain as possible
+            while (bIndex[i + chainLength] === move + chainLength) {
+                chainLength++;
+            }
+
             // the element currently at this index will be moved later so increase the insert offset
-            if (reverseIndex[i] > i) {
+            if (reverseIndex[i] > i + chainLength) {
                 insertOffset++
             }
 
             node = children[move]
             insertNode = childNodes[i + insertOffset] || null
-            if (node !== insertNode) {
-                domNode.insertBefore(node, insertNode)
+            insertedLength = 0
+            while (node !== insertNode && insertedLength++ < chainLength) {
+                domNode.insertBefore(node, insertNode);
+                node = children[move + insertedLength];
             }
 
             // the moved element came from the front of the array so reduce the insert offset
-            if (move < i) {
+            if (move + chainLength < i) {
                 insertOffset--
             }
         }
@@ -155,6 +168,8 @@ function reorderChildren(domNode, bIndex) {
         if (i in bIndex.removes) {
             insertOffset++
         }
+
+        i += chainLength
     }
 }
 

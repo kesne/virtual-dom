@@ -1,8 +1,16 @@
 {
   "name": "virtual-dom",
-  "version": "0.0.22",
+  "version": "1.1.0",
   "description": "A batched diff-based DOM rendering strategy",
-  "keywords": [],
+  "keywords": [
+    "virtual",
+    "dom",
+    "vdom",
+    "vtree",
+    "diff",
+    "patch",
+    "browser"
+  ],
   "author": "Matt-Esch <matt@mattesch.info>",
   "repository": "git://github.com/Matt-Esch/virtual-dom.git",
   "main": "index",
@@ -18,21 +26,22 @@
   },
   "dependencies": {
     "browser-split": "0.0.1",
-    "data-set": "^3.1.0",
     "error": "^4.3.0",
+    "ev-store": "^7.0.0",
     "global": "^4.3.0",
-    "is-object": "0.1.2",
+    "is-object": "^1.0.1",
     "next-tick": "^0.2.2",
     "run-browser": "^1.3.1",
     "x-is-array": "0.1.0",
     "x-is-string": "0.1.0"
   },
   "devDependencies": {
-    "global": "^4.2.1",
+    "istanbul": "^0.3.4",
     "min-document": "^2.6.1",
+    "opn": "^1.0.0",
     "tap-dot": "^0.2.1",
-    "tap-spec": "^0.2.0",
-    "tape": "^2.13.4",
+    "tap-spec": "^2.1.1",
+    "tape": "^3.0.3",
     "zuul": "^1.10.0"
   },
   "licenses": [
@@ -45,12 +54,16 @@
     "test": "node ./test/index.js | tap-spec",
     "dot": "node ./test/index.js | tap-dot",
     "start": "node ./index.js",
-    "cover": "istanbul cover --no-default-excludes -x **/node_modules/vtree/node_modues/** -x **/node_modules/vdom/node_modules/** -x **/node_modules/b*/* -x **/node_modules/g*/* -x **/node_modules/i*/** -x **/node_modules/m*/** -x **/node_modules/r*/** -x **/node_modules/t*/** -x **/node_modules/x*/** -x **/node_modules/z*/** -x **/test/** -x **/tests/** --report none --print detail ./test/index.js",
-    "view-cover": "istanbul report html && open ./coverage/index.html",
+    "cover": "istanbul cover --report html --print detail ./test/index.js",
+    "view-cover": "istanbul report html && opn ./coverage/index.html",
     "browser": "run-browser test/index.js",
     "phantom": "run-browser test/index.js -b | tap-spec",
     "dist": "browserify --standalone virtual-dom index.js > dist/virtual-dom.js",
-    "travis-test": "npm run phantom && npm run cover && istanbul report lcov && ((cat coverage/lcov.info | coveralls) || exit 0)"
+    "travis-test": "npm run phantom && npm run cover && istanbul report lcov && ((cat coverage/lcov.info | coveralls) || exit 0)",
+    "release": "npm run release-patch",
+    "release-patch": "git checkout master && npm version patch && git push origin master --tags && npm publish",
+    "release-minor": "git checkout master && npm version minor && git push origin master --tags && npm publish",
+    "release-major": "git checkout master && npm version major && git push origin master --tags && npm publish"
   },
   "testling": {
     "files": "test/*.js",
